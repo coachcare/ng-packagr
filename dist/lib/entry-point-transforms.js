@@ -47,7 +47,6 @@ exports.transformSources = (args) => __awaiter(this, void 0, void 0, function* (
     // 2. NGC
     log.info('Compiling with ngc');
     const tsOutput = yield ngc_1.ngc(entryPoint, artefacts);
-    console.log(tsOutput);
     // 3. FESM15: ROLLUP
     log.info('Bundling to FESM15');
     const fesm15File = path.resolve(artefacts.stageDir, 'esm2015', entryPoint.flatModuleFile + '.js');

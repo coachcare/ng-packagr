@@ -21,7 +21,7 @@ export interface NgPackageConfig {
      */
     workingDirectory?: string;
     /**
-     * Path to the libraries.
+     * Path to sub-libraries.
      */
     paths?: {
         [k: string]: any;

@@ -24,7 +24,7 @@
       "default": ".ng_pkg_build"
     },
     "paths": {
-      "description": "Path to the libraries.",
+      "description": "Path to sub-libraries.",
       "type": "object",
       "additionalProperties": true
     },

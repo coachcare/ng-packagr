@@ -21,38 +21,41 @@ const NgPackageSchemaClass = json_schema_1.SchemaClassFactory(require('../../ng-
 const instantiateSchemaClass = (ngPackageJson) => new NgPackageSchemaClass(ngPackageJson);
 const fileExists = (pathLike) => __awaiter(this, void 0, void 0, function* () { return (yield fs_extra_1.pathExists(pathLike)) && (yield fs_extra_1.lstat(pathLike)).isFile(); });
 /**
- * Resolves a package conf by testing for 'package.json', 'ng-package.json', or 'ng-package.js'.
+ * Resolves a user's package by testing for 'package.json', 'ng-package.json', or 'ng-package.js'.
  *
  * @param folderPathOrFilePath A path pointing either to a file or a directory
- * @return The user's package conf
+ * @return The user's package
  */
-const resolvePackageConf = (folderPathOrFilePath) => __awaiter(this, void 0, void 0, function* () {
+const resolveUserPackage = (folderPathOrFilePath) => __awaiter(this, void 0, void 0, function* () {
     const pathStats = yield fs_extra_1.lstat(folderPathOrFilePath);
     const fullPath = path.isAbsolute(folderPathOrFilePath) ? folderPathOrFilePath : path.resolve(folderPathOrFilePath);
     const basePath = pathStats.isDirectory() ? fullPath : path.dirname(fullPath);
     const packageJson = yield fs_extra_1.readJson(path.join(basePath, 'package.json'));
-    const packageConfPathJson = path.join(basePath, 'ng-package.json');
-    const packageConfPathJs = path.join(basePath, 'ng-package.js');
-    let packageConf = {
-        basePath,
-        packageJson,
-        ngPackageJson: {}
-    };
+    const ngPackageJsonPath = path.join(basePath, 'ng-package.json');
+    const ngPackageJsPath = path.join(basePath, 'ng-package.js');
+    let ngPackageJson;
     if (packageJson['ngPackage']) {
-        packageConf.ngPackageJson = Object.assign({}, packageJson['ngPackage']);
+        // Read `ngPackage` from `package.json`
+        ngPackageJson = Object.assign({}, packageJson['ngPackage']);
     }
-    else if (yield fileExists(packageConfPathJson)) {
-        packageConf.ngPackageJson = yield fs_extra_1.readJson(packageConfPathJson);
+    else if (yield fileExists(ngPackageJsonPath)) {
+        // Read 'ng-package.json' file
+        ngPackageJson = yield fs_extra_1.readJson(ngPackageJsonPath);
     }
-    else if ((yield fileExists(packageConfPathJs))) {
-        packageConf.ngPackageJson = yield Promise.resolve().then(function () { return require(packageConfPathJs); });
+    else if ((yield fileExists(ngPackageJsPath))) {
+        // Dynamic `require('<path>') the given file
+        ngPackageJson = yield Promise.resolve().then(function () { return require(ngPackageJsPath); });
     }
-    else {
-        packageConf = undefined;
+    if (ngPackageJson) {
+        return {
+            basePath,
+            packageJson,
+            ngPackageJson
+        };
     }
-    if (packageConf || pathStats.isDirectory()) {
+    if (pathStats.isDirectory()) {
         // return even if it's undefined and use defaults when it's not a file
-        return packageConf;
+        return undefined;
     }
     if (pathStats.isFile()) {
         // a project file was specified but was in valid
@@ -117,12 +120,12 @@ const secondaryEntryPoint = (primaryDirectoryPath, primary, { packageJson, ngPac
 };
 exports.discoverPackages = ({ project }) => __awaiter(this, void 0, void 0, function* () {
     project = path.isAbsolute(project) ? project : path.resolve(project);
-    const primaryPackage = yield resolvePackageConf(project);
+    const primaryPackage = yield resolveUserPackage(project);
     const primary = primaryEntryPoint(primaryPackage);
     log.debug(`Found primary entry point: ${primary.moduleId}`);
     const secondaries = yield (findSecondaryPackagesPaths(primaryPackage.basePath, primary.$get('dest'))
         .then((folderPaths) => Promise.all(folderPaths
-        .map((folderPath) => resolvePackageConf(folderPath)
+        .map((folderPath) => resolveUserPackage(folderPath)
         .catch(() => {
         log.warn(`Cannot read secondary entry point at ${folderPath}. Skipping.`);
         return null;
