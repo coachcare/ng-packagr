@@ -34,6 +34,8 @@ function createNgPackage(opts) {
             }
             yield copy_1.copyFiles(`${ngPackage.src}/README.md`, ngPackage.dest);
             yield copy_1.copyFiles(`${ngPackage.src}/LICENSE`, ngPackage.dest);
+            // clean the working directory for a successful build only
+            yield rimraf_1.rimraf(ngPackage.workingDirectory);
             log.success(`Built Angular Package!
  - from: ${ngPackage.src}
  - to:   ${ngPackage.dest}
@@ -42,12 +44,10 @@ function createNgPackage(opts) {
         catch (error) {
             // Report error messages and throw the error further up
             log.error(error);
-            throw error;
-        }
-        finally {
-            if (ngPackage && !process.env.KEEP) {
-                yield rimraf_1.rimraf(ngPackage.workingDirectory);
+            if (ngPackage) {
+                log.info(`Build failed. The working directory was not pruned. Files are stored at {ngPackage.workingDirectory}.`);
             }
+            throw error;
         }
     });
 }

@@ -44,7 +44,6 @@ exports.prepareTsConfig = ({ artefacts, entryPoint, pkg }) => {
         default:
             break;
     }
-    // console.log(entryPoint);
     artefacts.tsConfig = tsConfig;
 };
 /** Transforms TypeScript AST */
@@ -177,6 +176,8 @@ function ngc(entryPoint, artefacts) {
             const outFile = tsConfig.options.flatModuleOutFile;
             const extName = path.extname(outFile);
             artefacts.tsSources.dispose();
+            // FIXME sometimes the lib is generated in a subfolder
+            // this searchs NgPackage.src as the subpath to search
             const basePath = fs.existsSync(path.resolve(outDir, entryPoint.src, outFile)) ?
                 path.resolve(outDir, entryPoint.src, outFile) :
                 path.resolve(outDir, outFile);
