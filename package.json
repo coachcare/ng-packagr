@@ -22,7 +22,7 @@
     "url": "https://github.com/dherges/ng-packagr/issues"
   },
   "bin": {
-    "ng-packagr": "./cli/main.js"
+    "ng-packagr": "./dist/cli/main.js"
   },
   "dependencies": {
     "@ngtools/json-schema": "^1.1.0",
@@ -112,6 +112,9 @@
     "commitmsg": "commitlint -e",
     "gh-pages": "gh-pages -d docs/ghpages"
   },
-  "main": "lib/ng-packagr.js",
-  "typings": "lib/ng-packagr.d.ts"
+  "main": "dist/ng-packagr.js",
+  "typings": "dist/ng-packagr.d.ts",
+  "files": [
+    "dist"
+  ]
 }
