@@ -28,6 +28,7 @@ function downlevelWithTsc(inputFile, outputFile) {
             module: typescript_1.ModuleKind.ES2015,
             allowJs: true,
             sourceMap: true,
+            downlevelIteration: true,
             mapRoot: path.dirname(inputFile)
         };
         const transpiled = typescript_1.transpileModule(trimSourceMap(input.toString()), {

@@ -13,38 +13,59 @@ const nodeResolve = require("rollup-plugin-node-resolve");
 const commonJs = require("rollup-plugin-commonjs");
 const path = require("path");
 const log = require("../util/log");
-const rollup_globals_1 = require("../conf/rollup.globals");
-const ROLLUP_VERSION = __rollup.VERSION;
-/**
- * Runs rollup over the given entry file, bundling it up.
- *
- * @param opts
- */
+exports.externalModuleIdStrategy = (moduleId, embedded = []) => {
+    // more information about why we don't check for 'node_modules' path
+    // https://github.com/rollup/rollup-plugin-node-resolve/issues/110#issuecomment-350353632
+    if (path.isAbsolute(moduleId) ||
+        moduleId.startsWith(".") ||
+        moduleId.startsWith("/") ||
+        moduleId.indexOf("commonjsHelpers") >= 0 || // in case we are embedding a commonjs module we need to include it's helpers also
+        embedded.some(x => x === moduleId)) {
+        // if it's either 'absolute', marked to embed, starts with a '.' or '/' it's not external
+        return false;
+    }
+    return true;
+};
+exports.umdModuleIdStrategy = (moduleId, umdModuleIds = {}) => {
+    let nameProvided;
+    if (nameProvided = umdModuleIds[moduleId]) {
+        return nameProvided;
+    }
+    let regMatch;
+    if (regMatch = /^\@angular\/platform-browser-dynamic(\/?.*)/.exec(moduleId)) {
+        return `ng.platformBrowserDynamic${regMatch[1]}`.replace("/", ".");
+    }
+    if (regMatch = /^\@angular\/platform-browser(\/?.*)/.exec(moduleId)) {
+        return `ng.platformBrowser${regMatch[1]}`.replace("/", ".");
+    }
+    if (regMatch = /^\@angular\/(.+)/.exec(moduleId)) {
+        return `ng.${regMatch[1]}`.replace("/", ".");
+    }
+    if (/^rxjs\/(add\/)?observable/.test(moduleId)) {
+        return "Rx.Observable";
+    }
+    if (/^rxjs\/scheduler/.test(moduleId)) {
+        return "Rx.Scheduler";
+    }
+    if (/^rxjs\/symbol/.test(moduleId)) {
+        return "Rx.Symbol";
+    }
+    if (/^rxjs\/(add\/)?operator/.test(moduleId)) {
+        return "Rx.Observable.prototype";
+    }
+    if (/^rxjs\/[^\/]+$/.test(moduleId)) {
+        return "Rx";
+    }
+    return ''; // leave it up to rollup to guess the global name
+};
+/** Runs rollup over the given entry file, writes a bundle file. */
 function rollup(opts) {
     return __awaiter(this, void 0, void 0, function* () {
-        log.debug(`rollup (v${ROLLUP_VERSION}) ${opts.entry} to ${opts.dest} (${opts.format})`);
-        const globals = Object.assign({}, rollup_globals_1.ROLLUP_GLOBALS, opts.externals);
-        const globalsKeys = Object.keys(globals);
+        log.debug(`rollup (v${__rollup.VERSION}) ${opts.entry} to ${opts.dest} (${opts.format})`);
         // Create the bundle
         const bundle = yield __rollup.rollup({
             context: 'this',
-            external: (moduleId) => {
-                const isExplicitExternal = globalsKeys.some((global) => global === moduleId);
-                if (isExplicitExternal === true) {
-                    return true;
-                }
-                // Determine from the path
-                if (moduleId.startsWith('/')) {
-                    const moduleIdPath = path.parse(moduleId);
-                    const entryPath = path.parse(opts.entry);
-                    // `moduleId` is a file in the sub-tree of `opts.entry` -> inline to bundle
-                    if (moduleIdPath.dir.startsWith(entryPath.dir)) {
-                        return false;
-                    }
-                }
-                // XX: by default, the referenced module is inlined
-                return false;
-            },
+            external: moduleId => exports.externalModuleIdStrategy(moduleId, opts.embedded || []),
             input: opts.entry,
             plugins: [
                 nodeResolve({ jsnext: true, module: true }),
@@ -59,16 +80,36 @@ function rollup(opts) {
         });
         // Output the bundle to disk
         yield bundle.write({
-            // Keep the moduleId empty because we don't want to force developers to a specific moduleId.
-            moduleId: '',
             name: `${opts.moduleName}`,
             file: opts.dest,
             format: opts.format,
             banner: '',
-            globals: globals,
+            globals: moduleId => exports.umdModuleIdStrategy(moduleId, opts.umdModuleIds || {}),
             sourcemap: true
         });
     });
 }
-exports.rollup = rollup;
+exports.flattenToFesm15 = ({ artefacts, entryPoint, pkg }) => __awaiter(this, void 0, void 0, function* () {
+    const fesm15File = path.resolve(artefacts.stageDir, 'esm2015', entryPoint.flatModuleFile + '.js');
+    yield rollup({
+        moduleName: entryPoint.moduleId,
+        entry: artefacts.es2015EntryFile,
+        format: 'es',
+        dest: fesm15File,
+        embedded: entryPoint.embedded
+    });
+    artefacts.fesm15BundleFile = fesm15File;
+});
+exports.flattenToUmd = ({ artefacts, entryPoint, pkg }) => __awaiter(this, void 0, void 0, function* () {
+    const umdFile = path.resolve(artefacts.stageDir, 'bundles', entryPoint.flatModuleFile + '.umd.js');
+    yield rollup({
+        moduleName: entryPoint.umdModuleId,
+        entry: artefacts.fesm5BundleFile,
+        format: 'umd',
+        dest: umdFile,
+        umdModuleIds: Object.assign({}, entryPoint.umdModuleIds),
+        embedded: entryPoint.embedded
+    });
+    artefacts.umdBundleFile = umdFile;
+});
 //# sourceMappingURL=rollup.js.map

@@ -28,6 +28,7 @@ exports.prepareTsConfig = ({ artefacts, entryPoint, pkg }) => {
     tsConfig.options.flatModuleOutFile = `${entryPoint.flatModuleFile}.js`;
     tsConfig.options.basePath = basePath;
     tsConfig.options.baseUrl = basePath;
+    tsConfig.options.rootDir = basePath;
     tsConfig.options.paths = entryPoint.paths;
     tsConfig.options.outDir = artefacts.outDir;
     tsConfig.options.genDir = artefacts.outDir;
@@ -56,7 +57,10 @@ const transformSources = (tsConfig, transformers) => {
         options: tsConfig.options,
         host: compilerHost
     });
-    const transformationResult = ts.transform(program.getTsProgram().getSourceFiles(), transformers, tsConfig.options);
+    const sourceFiles = program.getTsProgram().getSourceFiles();
+    const transformationResult = ts.transform(
+    // XX: circumvent tsc compile error in 2.6
+    Array.from(sourceFiles), transformers, tsConfig.options);
     return transformationResult;
 };
 //const compilerHostFromTransformation =

@@ -8,6 +8,11 @@
     "$schema": {
       "type": "string"
     },
+    "src": {
+      "description": "The source folder of an Angular library. This is the folder where a `package.json` is located and defaults to cwd.",
+      "type": "string",
+      "default": "."
+    },
     "dest": {
       "description": "Destination folder where distributable binaries of the Angular library are written (default: `dist`).",
       "type": "string",

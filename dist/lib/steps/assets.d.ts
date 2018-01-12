@@ -1,2 +1,2 @@
-import { BuildStep } from '../domain/build-step';
+import { BuildStep } from '../deprecations';
 export declare const processAssets: BuildStep;

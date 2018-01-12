@@ -1,4 +1,4 @@
-import { NgPackage } from '../domain/ng-package-format';
+import { NgPackage } from '../ng-package-format/package';
 export declare const discoverPackages: ({project}: {
     project: string;
 }) => Promise<NgPackage>;

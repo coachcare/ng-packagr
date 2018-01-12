@@ -1,5 +1,5 @@
-import { Artefacts } from '../domain/build-artefacts';
-import { NgEntryPoint } from '../domain/ng-package-format';
+import { NgArtefacts } from '../ng-package-format/artefacts';
+import { NgEntryPoint } from '../ng-package-format/entry-point';
 /**
  * Re-maps the source `.map` file for the given `sourceFile`. This keeps source maps intact over
  * a series of transpilations!
@@ -18,6 +18,6 @@ export declare function remapSourceMap(sourceFile: string): Promise<void>;
  * @param pkg Angular package
  */
 export declare function relocateSourceMapSources({artefacts, entryPoint}: {
-    artefacts: Artefacts;
+    artefacts: NgArtefacts;
     entryPoint: NgEntryPoint;
 }): Promise<void>;

@@ -1,7 +1,7 @@
 import * as ng from '@angular/compiler-cli';
-import { Artefacts } from '../domain/build-artefacts';
-import { BuildStep } from '../domain/build-step';
-import { NgEntryPoint } from '../domain/ng-package-format';
+import { NgArtefacts } from '../ng-package-format/artefacts';
+import { NgEntryPoint } from '../ng-package-format/entry-point';
+import { BuildStep } from '../deprecations';
 /** TypeScript configuration used internally (marker typer). */
 export declare type TsConfig = ng.ParsedConfiguration;
 /** Prepares TypeScript Compiler and Angular Compiler option. */
@@ -16,7 +16,7 @@ export declare const inlineTemplatesAndStyles: BuildStep;
  * @param entryPoint Angular package data
  * @returns Promise<{}> Pathes of the flatModuleOutFile
  */
-export declare function ngc(entryPoint: NgEntryPoint, artefacts: Artefacts): Promise<{
+export declare function ngc(entryPoint: NgEntryPoint, artefacts: NgArtefacts): Promise<{
     js: string;
     metadata: string;
     typings: string;

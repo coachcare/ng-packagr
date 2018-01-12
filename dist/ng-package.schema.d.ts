@@ -13,7 +13,7 @@ export interface NgPackageConfig {
      */
     src?: string;
     /**
-     * The destination folder to output build artifacts and distributables of an Angular library (default: `dist`).
+     * Destination folder where distributable binaries of the Angular library are written (default: `dist`).
      */
     dest?: string;
     /**
@@ -27,11 +27,11 @@ export interface NgPackageConfig {
         [k: string]: any;
     };
     /**
-     * Description of the library that is being built.
+     * Description of the library's entry point.
      */
     lib?: {
         /**
-         * Entry file to the public API of the library (default: `src/public_api.ts`).
+         * Entry file to the public API (default: `src/public_api.ts`).
          */
         entryFile?: string;
         /**
@@ -39,9 +39,13 @@ export interface NgPackageConfig {
          */
         flatModuleFile?: string;
         /**
-         * A symbol map of external dependencies. The purpose of this map is to correctly bundle a flat module file (with `rollup`). By default, `rxjs` and `@angular/*` dependency symbols are supported.
+         * An array of external dependencies that will be embedded in the final bundle.
          */
-        externals?: {
+        embedded?: string[];
+        /**
+         * A map of external dependencies and their correspondent UMD module identifiers. Map keys are TypeScript / EcmaScript module identifiers. Map values are UMD module ids. The purpose of this map is to correctly bundle an UMD module file (with `rollup`). By default, `rxjs`, `tslib` and `@angular/*` dependency symbols are supported.
+         */
+        umdModuleIds?: {
             [k: string]: any;
         };
         /**

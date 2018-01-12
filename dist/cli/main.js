@@ -3,8 +3,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const program = require("commander");
 const path = require("path");
-const ng_packagr_1 = require("../lib/ng-packagr");
-const version_info_1 = require("../lib/version-info");
+const command_1 = require("../lib/commands/command");
+const build_command_1 = require("../lib/commands/build.command");
+const version_command_1 = require("../lib/commands/version.command");
 const DEFAULT_PROJECT_PATH = path.resolve(process.cwd(), 'ng-package.json');
 function parseProjectPath(parsed) {
     return parsed || DEFAULT_PROJECT_PATH;
@@ -14,11 +15,11 @@ program
     .option('-V, --version', 'Prints version info')
     .option('-p, --project [path]', 'Path to the \'ng-package.json\' or \'package.json\' file.', parseProjectPath, DEFAULT_PROJECT_PATH);
 program.on('option:version', () => {
-    version_info_1.printVersionInfo();
+    version_command_1.version();
     process.exit(0);
 });
 program
     .parse(process.argv);
-ng_packagr_1.createNgPackage({ project: program.opts().project })
+command_1.execute(build_command_1.build, { project: program.opts().project })
     .catch((err) => process.exit(111));
 //# sourceMappingURL=main.js.map

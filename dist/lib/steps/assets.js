@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const fs_extra_1 = require("fs-extra");
-const ng_package_format_1 = require("../domain/ng-package-format");
+const entry_point_1 = require("../ng-package-format/entry-point");
 const log = require("../util/log");
 // CSS Tools
 const autoprefixer = require("autoprefixer");
@@ -68,7 +68,7 @@ const processStylesheet = (stylesheetFilePath, srcFolder, cssUrl) => __awaiter(t
         const browsers = browserslist(undefined, { stylesheetFilePath });
         log.debug(`postcss with autoprefixer for ${stylesheetFilePath}`);
         const postCssPlugins = [autoprefixer({ browsers })];
-        if (cssUrl !== ng_package_format_1.CssUrl.none) {
+        if (cssUrl !== entry_point_1.CssUrl.none) {
             log.debug(`postcssUrl: ${cssUrl}`);
             postCssPlugins.push(postcssUrl({ url: cssUrl }));
         }
@@ -77,6 +77,8 @@ const processStylesheet = (stylesheetFilePath, srcFolder, cssUrl) => __awaiter(t
             from: stylesheetFilePath,
             to: stylesheetFilePath.replace(path.extname(stylesheetFilePath), '.css')
         });
+        // Escape existing backslashes for the final output into a string literal, which would otherwise escape the character after it
+        result.css = result.css.replace(/\\/g, '\\\\');
         // Log warnings from postcss
         result.warnings().forEach((msg) => {
             log.warn(msg.toString());

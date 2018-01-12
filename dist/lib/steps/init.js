@@ -14,7 +14,8 @@ const glob = require("glob");
 const path = require("path");
 const log = require("../util/log");
 const path_1 = require("../util/path");
-const ng_package_format_1 = require("../domain/ng-package-format");
+const entry_point_1 = require("../ng-package-format/entry-point");
+const package_1 = require("../ng-package-format/package");
 /** Creates a SchemaClass for `NgPackageConfig` */
 const NgPackageSchemaClass = json_schema_1.SchemaClassFactory(require('../../ng-package.schema.json'));
 /** Instantiates a concrete schema from `NgPackageConfig` */
@@ -44,7 +45,7 @@ const resolveUserPackage = (folderPathOrFilePath) => __awaiter(this, void 0, voi
     }
     else if ((yield fileExists(ngPackageJsPath))) {
         // Dynamic `require('<path>') the given file
-        ngPackageJson = yield Promise.resolve().then(function () { return require(ngPackageJsPath); });
+        ngPackageJson = yield Promise.resolve().then(() => require(ngPackageJsPath));
     }
     if (ngPackageJson) {
         return {
@@ -67,7 +68,7 @@ const resolveUserPackage = (folderPathOrFilePath) => __awaiter(this, void 0, voi
     throw new Error(`Cannot discover package sources at ${folderPathOrFilePath}`);
 });
 /** Reads a primary entry point from it's package file. */
-const primaryEntryPoint = ({ packageJson, ngPackageJson, basePath }) => new ng_package_format_1.NgEntryPoint(packageJson, ngPackageJson, instantiateSchemaClass(ngPackageJson), basePath);
+const primaryEntryPoint = ({ packageJson, ngPackageJson, basePath }) => new entry_point_1.NgEntryPoint(packageJson, ngPackageJson, instantiateSchemaClass(ngPackageJson), basePath);
 /**
  * Scans `directoryPath` and sub-folders, looking for `package.json` files.
  * Similar to `find ${directoryPath} --name package.json --exec dirname {}`.
@@ -76,18 +77,20 @@ const primaryEntryPoint = ({ packageJson, ngPackageJson, basePath }) => new ng_p
  * @param excludeFolder A sub-folder of `directoryPath` that is excluded from search results.
  */
 const findSecondaryPackagesPaths = (directoryPath, excludeFolder) => __awaiter(this, void 0, void 0, function* () {
-    const EXCLUDE_FOLDERS = [
+    let excludedFolders = [
         'node_modules',
         'dist',
         '.ng_build',
         '.ng_pkg_build',
-    ]
-        .map((directoryName) => `**/${directoryName}/**/package.json`)
-        .concat([
-        path.resolve(directoryPath, 'package.json'),
-        path.resolve(directoryPath, 'ng-package.json'),
-        path.resolve(directoryPath, excludeFolder) + '/**/package.json'
-    ]);
+        path.resolve(directoryPath, excludeFolder)
+    ];
+    const EXCLUDE_FOLDERS = [];
+    for (let folder of excludedFolders) {
+        EXCLUDE_FOLDERS.push(`**/${folder}/**/package.json`);
+        EXCLUDE_FOLDERS.push(`**/${folder}/**/ng-package.json`);
+    }
+    EXCLUDE_FOLDERS.push(directoryPath + '/package.json');
+    EXCLUDE_FOLDERS.push(directoryPath + '/ng-package.json');
     return new Promise((resolve, reject) => {
         glob(`${directoryPath}/**/*package.json`, { ignore: EXCLUDE_FOLDERS, cwd: directoryPath }, (err, files) => {
             if (err) {
@@ -107,13 +110,13 @@ const findSecondaryPackagesPaths = (directoryPath, excludeFolder) => __awaiter(t
  * @param primary The primary entry point.
  */
 const secondaryEntryPoint = (primaryDirectoryPath, primary, { packageJson, ngPackageJson, basePath }) => {
-    if (basePath === primaryDirectoryPath) {
+    if (path.resolve(basePath) === path.resolve(primaryDirectoryPath)) {
         log.error(`Cannot read secondary entry point. It's already a primary entry point. path=${basePath}`);
         throw new Error(`Secondary entry point is already a primary.`);
     }
     const relativeSourcePath = path.relative(primaryDirectoryPath, basePath);
     const secondaryModuleId = path_1.ensureUnixPath(`${primary.moduleId}/${relativeSourcePath}`);
-    return new ng_package_format_1.NgEntryPoint(packageJson, ngPackageJson, instantiateSchemaClass(ngPackageJson), basePath, {
+    return new entry_point_1.NgEntryPoint(packageJson, ngPackageJson, instantiateSchemaClass(ngPackageJson), basePath, {
         moduleId: secondaryModuleId,
         destinationPath: path.resolve(primary.destinationPath, relativeSourcePath)
     });
@@ -136,6 +139,6 @@ exports.discoverPackages = ({ project }) => __awaiter(this, void 0, void 0, func
     if (secondaries.length > 0) {
         log.debug(`Found secondary entry points: ${secondaries.map(e => e.moduleId).join(', ')}`);
     }
-    return new ng_package_format_1.NgPackage(primaryPackage.basePath, primary, secondaries);
+    return new package_1.NgPackage(primaryPackage.basePath, primary, secondaries);
 });
 //# sourceMappingURL=init.js.map
