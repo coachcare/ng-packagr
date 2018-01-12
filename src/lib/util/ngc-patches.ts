@@ -36,7 +36,7 @@ export function createEmitCallback(options: api.CompilerOptions): api.TsEmitCall
     shouldSkipTsickleProcessing: (fileName) =>
                                      /\.d\.ts$/.test(fileName) || GENERATED_FILES.test(fileName),
     pathToModuleName: (context, importPath) => '',
-    shouldIgnoreWarningsForPath: (filePath) => false,
+    shouldIgnoreWarningsForPath: (filePath) => true,
     fileNameToModuleId: (fileName) => fileName,
     googmodule: false,
     untyped: true,
