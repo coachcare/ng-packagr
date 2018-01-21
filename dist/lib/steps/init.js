@@ -125,8 +125,9 @@ exports.discoverPackages = ({ project }) => __awaiter(this, void 0, void 0, func
     project = path.isAbsolute(project) ? project : path.resolve(project);
     const primaryPackage = yield resolveUserPackage(project);
     const primary = primaryEntryPoint(primaryPackage);
+    const basePath = path.dirname(primary.entryFilePath);
     log.debug(`Found primary entry point: ${primary.moduleId}`);
-    const secondaries = yield (findSecondaryPackagesPaths(primaryPackage.basePath, primary.$get('dest'))
+    const secondaries = yield (findSecondaryPackagesPaths(basePath, primary.$get('dest'))
         .then((folderPaths) => Promise.all(folderPaths
         .map((folderPath) => resolveUserPackage(folderPath)
         .catch(() => {
@@ -135,7 +136,7 @@ exports.discoverPackages = ({ project }) => __awaiter(this, void 0, void 0, func
     }))))
         .then((secondaryPackages) => secondaryPackages
         .filter((value) => !!value)
-        .map((secondaryPackage) => secondaryEntryPoint(primaryPackage.basePath, primary, secondaryPackage))));
+        .map((secondaryPackage) => secondaryEntryPoint(basePath, primary, secondaryPackage))));
     if (secondaries.length > 0) {
         log.debug(`Found secondary entry points: ${secondaries.map(e => e.moduleId).join(', ')}`);
     }

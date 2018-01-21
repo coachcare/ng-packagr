@@ -174,9 +174,10 @@ export const discoverPackages =
 
     const primaryPackage = await resolveUserPackage(project);
     const primary = primaryEntryPoint(primaryPackage);
+    const basePath = path.dirname(primary.entryFilePath);
     log.debug(`Found primary entry point: ${primary.moduleId}`);
 
-    const secondaries = await (findSecondaryPackagesPaths(primaryPackage.basePath, primary.$get('dest'))
+    const secondaries = await (findSecondaryPackagesPaths(basePath, primary.$get('dest'))
       .then((folderPaths) => Promise.all(folderPaths
         .map((folderPath) => resolveUserPackage(folderPath)
           .catch(() => {
@@ -188,7 +189,7 @@ export const discoverPackages =
       ))
       .then((secondaryPackages) => secondaryPackages
         .filter((value) => !!value)
-        .map((secondaryPackage) => secondaryEntryPoint(primaryPackage.basePath, primary, secondaryPackage))
+        .map((secondaryPackage) => secondaryEntryPoint(basePath, primary, secondaryPackage))
       )
     );
     if (secondaries.length > 0) {
