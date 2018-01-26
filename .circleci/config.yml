@@ -1,69 +1,57 @@
 version: 2
+
 defaults: &defaults
-  docker:
-    - image: angular/ngcontainer:latest
   working_directory: ~/repo
+  docker:
+    - image: circleci/node:7.10
 
 jobs:
-  # Build for all branches and tags
+  setup:
+    <<: *defaults
+    steps:
+      - checkout:
+          path: ~/repo
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: NPM Dependencies
+          command: npm install
+      - persist_to_workspace:
+          root: .
+          paths:
+           - .
+
   build:
     <<: *defaults
     steps:
-      # Checkout, Download and cache dependencies
-      - checkout
-      - restore_cache:
-          key: v2-dependencies-{{ checksum "yarn.lock" }}
-      # Install dependencies
-      - run: yarn install --frozen-lockfile --non-interactive
-      - save_cache:
-          key: v2-dependencies-{{ checksum "yarn.lock" }}
-          paths:
-            - "node_modules"
-      # Run the ci build
-      - run: yarn test
-      # Store artefacts on circle
+      - attach_workspace:
+          at: ~/repo
       - run:
-          name: Collect artefacts
-          command: |
-            mkdir -p /tmp/artefacts \
-              && cp -r --parents integration/samples/**/dist /tmp/artefacts \
-              && cp -r --parents integration/consumers/**/dist /tmp/artefacts
-      - store_artifacts:
-          path: /tmp/artefacts/integration
-          destination: integration
-      - store_artifacts:
-          path: ~/repo/dist
-          destination: dist
-      - deploy:
-          name: Deploy Git tag to npm registry
-          command: |
-            # CIRCLE_TAG indicates whether the job runs for the tag (as opposed to: the commit on the branch)
-            if [ -z "${CIRCLE_TAG}" ]; then
-              echo "Skipping deployment. This build job runs for a branch."
-              exit 0
-            fi
-            echo "Deploying..."
-            # The git tag that Circle CI checked out
-            GIT_TAG=$(git tag -l --points-at HEAD)
-            # The npm tag for publishing this release either as "latest" or "next"
-            NPM_TAG=latest
-            if [[ "${GIT_TAG}" =~ v([0-9]+)\.([0-9]+)\.([0-9]+)-([a-zA-Z]+)\..* ]]; then
-              NPM_TAG=next
-            fi
-            # Build, pack and publish to npm registry
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            yarn publish:ci
-            pushd dist
-            npm publish --tag ${NPM_TAG}
-            npm pack .
+          name: Build Library
+          command: npm run build
+
+  publish:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo/dist
+      - run:
+          name: Publish on NPM
+          command: npm publish
 
 workflows:
   version: 2
-  cirunner:
+  setup_build_publish:
     jobs:
+      - setup
       - build:
+          requires:
+            - setup
+      - publish:
+          requires:
+            - build
           filters:
             branches:
-              ignore: /gh-pages/
+              ignore: /.*/
             tags:
-              only: /v.*/
+              only: /^v[0-9]+(\.[0-9]+)*/
