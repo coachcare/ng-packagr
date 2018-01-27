@@ -44,9 +44,15 @@ workflows:
   setup_build_publish:
     jobs:
       - setup
+          filters:
+            tags:
+              only: /.*/
       - build:
           requires:
             - setup
+          filters:
+            tags:
+              only: /.*/
       - publish:
           requires:
             - build
