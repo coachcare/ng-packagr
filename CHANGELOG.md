@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="2.0.0-rc.11"></a>
+# [2.0.0-rc.11](https://github.com/dherges/ng-packagr/compare/v2.0.0-rc.10...v2.0.0-rc.11) (2018-01-27)
+
+
+### Bug Fixes
+
+* added synthetic imports ([c4e78c6](https://github.com/dherges/ng-packagr/commit/c4e78c6))
+* basePath as the entryFile path instead package path ([2ceef19](https://github.com/dherges/ng-packagr/commit/2ceef19))
+* omit the type checks in templates ([3a4652f](https://github.com/dherges/ng-packagr/commit/3a4652f))
+* remove husky cause conflicts with standard-version ([7c42416](https://github.com/dherges/ng-packagr/commit/7c42416))
+* use yarn on circleci ([c5fc8ab](https://github.com/dherges/ng-packagr/commit/c5fc8ab))
+
+
+
 <a name="2.0.0-rc.10"></a>
 # [2.0.0-rc.10](https://github.com/dherges/ng-packagr/compare/v2.0.0-rc.9...v2.0.0-rc.10) (2018-01-10)
 
