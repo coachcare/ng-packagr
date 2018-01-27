@@ -114,6 +114,14 @@
     "commitmsg": "commitlint -e",
     "gh-pages": "gh-pages -d docs/ghpages"
   },
+  "standard-version": {
+    "scripts": {
+      "postbump": "npm run build",
+      "postchangelog": "node ./scripts/prerelease.js",
+      "precommit": "git add ./dist && git commit --no-verify -m 'build: updated package'",
+      "posttag": "git push --follow-tags origin master"
+    }
+  },
   "main": "dist/ng-packagr.js",
   "typings": "dist/ng-packagr.d.ts",
   "files": [
