@@ -43,7 +43,7 @@ workflows:
   version: 2
   setup_build_publish:
     jobs:
-      - setup
+      - setup:
           filters:
             tags:
               only: /.*/
