@@ -15,7 +15,7 @@ jobs:
           at: ~/repo
       - run:
           name: NPM Dependencies
-          command: npm install
+          command: yarn install
       - persist_to_workspace:
           root: .
           paths:
@@ -28,7 +28,7 @@ jobs:
           at: ~/repo
       - run:
           name: Build Library
-          command: npm run build
+          command: yarn build
 
   publish:
     <<: *defaults
