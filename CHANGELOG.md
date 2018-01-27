@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="2.0.0-rc.12"></a>
+# [2.0.0-rc.12](https://github.com/dherges/ng-packagr/compare/v2.0.0-rc.11...v2.0.0-rc.12) (2018-01-27)
+
+
+
 <a name="2.0.0-rc.11"></a>
 # [2.0.0-rc.11](https://github.com/dherges/ng-packagr/compare/v2.0.0-rc.10...v2.0.0-rc.11) (2018-01-27)
 
